@@ -177,6 +177,7 @@ public class TLog {
     public static void objectToStr(StringBuilder sb, Object o) {
         if (o == null) {
             sb.append("null");
+            return;
         }
         for (ObjectToString objectToString : mList) {
             if (objectToString.process(sb, o)) {
