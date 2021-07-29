@@ -18,8 +18,12 @@ public class TLog {
 
         boolean process(StringBuilder sb, Object o);
     }
+    public interface PrintProxy{
+        void println(int priority,String msg);
+    }
 
     static List<ObjectToString> mList = new ArrayList<>();
+    static List<PrintProxy> printProxies = new ArrayList<>();
 
     static {
         final char[] digits = {
@@ -48,8 +52,11 @@ public class TLog {
         LOG_TAG = TAG;
     }
 
-    public static void regist(ObjectToString objectToString) {
+    public static void register(ObjectToString objectToString) {
         mList.add(0, objectToString);
+    }
+    public static void register(PrintProxy objectToString) {
+        printProxies.add(objectToString);
     }
 
     public static void v(Object... args) {
@@ -135,15 +142,17 @@ public class TLog {
         return "(Unknown Source)";
     }
 
-    private static int println(int priority, Object... msgs) {
+    private static void println(int priority, Object... msgs) {
         if (DebugLevel > priority) {
-            return 0;
+            return ;
         }
         if (msgs == null) {
-            return Log.println(priority, LOG_TAG, "null");
+            print(priority, LOG_TAG, "null");
+            return;
         }
         if (msgs.length == 0) {
-            return Log.println(priority, LOG_TAG, stackTrace(5));
+            print(priority, LOG_TAG, stackTrace(5));
+            return;
         }
 //        String tags = LOG_TAG + getLineNumber();
         StringBuilder sb = new StringBuilder(getLineInfo());
@@ -157,14 +166,27 @@ public class TLog {
             sb.append(" ");
         }
 
+        print(priority,LOG_TAG,sb.toString());
+    }
+    private static void print(int priority,String tag,String msg){
+        printLogcat(priority,tag,msg);
+        try {
+            for (PrintProxy printProxy : printProxies) {
+                printProxy.println(priority,msg);
+            }
+        }catch (Exception e){
+            TLog.e(e);
+        }
+    }
+    private static void printLogcat(int priority,String tag,String sb) {
         if (sb.length() > LOG_MAX_LEN) {
             int l = sb.length();
             for (int i = 0; i < l; i += LOG_MAX_LEN) {
-                Log.println(priority, LOG_TAG, sb.substring(i, Math.min(LOG_MAX_LEN + i, l)));
+                Log.println(priority, tag, sb.substring(i, Math.min(LOG_MAX_LEN + i, l)));
             }
-            return 0;
+            return ;
         } else {
-            return Log.println(priority, LOG_TAG, sb.toString());
+            Log.println(priority, tag, sb);
         }
     }
 

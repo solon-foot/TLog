@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+  package="com.github.solon_foot.view_log">
+  <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+  <application>
+    <provider
+      android:name=".DebugLogProvider"
+      android:authorities="${applicationId}.ViewDebugLogProvider"
+      android:enabled="true"
+      android:exported="false" />
+  </application>
+</manifest>

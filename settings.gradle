@@ -1,3 +1,5 @@
+include ':view-log'
+include ':http-log'
 rootProject.name='TLog'
 include ':app'
-include ':library'
+include ':base-log'
