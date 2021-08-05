@@ -30,12 +30,16 @@ public class SampleActivity extends Activity {
         map.put("b",new int[]{1,2,3,4,5,6});
         List list = Arrays.asList(map,map);
         TLog.e(list);
-        TLog.init("APP_NAME", Log.INFO);
+//        TLog.init("APP_NAME", Log.INFO);
 
 
     }
     public void testLog(View v){
         TLog.e("on button click");
+        TLog.i();
+        TLog.v();
+        TLog.w();
+        TLog.d();
 
     }
 }

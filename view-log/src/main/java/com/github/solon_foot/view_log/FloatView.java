@@ -1,5 +1,7 @@
 package com.github.solon_foot.view_log;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -7,26 +9,35 @@ import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Build;
 import android.os.Looper;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import com.github.solon_foot.TLog;
 import com.github.solon_foot.TLog.PrintProxy;
 import java.util.Calendar;
 
 public class FloatView extends FrameLayout implements PrintProxy {
 
-    TextView btnOk;
+    ImageView btnOk;
     View secondView;
     ListView listView;
-    ArrayAdapter<String> adapter;
+    ArrayAdapter<Model> adapter;
+    private static final int[] LOG_COLORS = {Color.WHITE,Color.WHITE,
+        0xFFbbbbbb,0xFF0070bb,0xFF48bb31,0xFFbbbb23,0xFFff5370,0xFF8f0005
+    };
 
     WindowManager windowManager;
     WindowManager.LayoutParams params;
@@ -38,19 +49,17 @@ public class FloatView extends FrameLayout implements PrintProxy {
         viewWidth = (int) (getResources().getDisplayMetrics().density * 50);
         init(context, viewWidth);
 //        setLayoutParams(new LayoutParams(width, width));
-        btnOk = new TextView(context);
+        btnOk = new ImageView(context);
 //        btnOk.setBackgroundResource(R.drawable.icon_btn);
-        btnOk.setBackgroundColor(Color.RED);
-        btnOk.setTextColor(Color.BLACK);
-        btnOk.setText("OK");
-        btnOk.setTextSize(18);
-        btnOk.setGravity(Gravity.CENTER);
+        btnOk.setBackgroundResource(R.drawable.view_log_bg_log);
+        btnOk.setImageResource(R.drawable.view_log_icon_log);
+        btnOk.setPadding(viewWidth/5,viewWidth/5,viewWidth/5,viewWidth/5);
         btnOk.setOnClickListener(v -> {
+            btnOk.setVisibility(GONE);
+            secondView.setVisibility(VISIBLE);
             params.width = LayoutParams.MATCH_PARENT;
             params.height = LayoutParams.MATCH_PARENT;
             windowManager.updateViewLayout(this, params);
-            btnOk.setVisibility(GONE);
-            secondView.setVisibility(VISIBLE);
         });
         LayoutParams params = new LayoutParams(viewWidth,viewWidth);
         params.gravity = Gravity.CENTER;
@@ -58,12 +67,42 @@ public class FloatView extends FrameLayout implements PrintProxy {
 
         initSecondView(context);
     }
-
+    private void copy(String data){
+        ClipboardManager clipboardManager = (ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clipData = ClipData.newPlainText("debug log",data);
+        clipboardManager.setPrimaryClip(clipData);
+    }
     private void initSecondView(Context context) {
         LayoutInflater inflater = LayoutInflater.from(context);
-        secondView = inflater.inflate(R.layout.layout_log, this, false);
+        secondView = inflater.inflate(R.layout.view_log_layout_log, this, false);
         listView = secondView.findViewById(R.id.list_view);
-        adapter = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1);
+        listView.setOnItemLongClickListener(new OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                copy(adapter.getItem(position).msg);
+                Toast.makeText(getContext(),"Copied",Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+        adapter = new ArrayAdapter<Model>(context, 0){
+            int padding = (int) (getResources().getDisplayMetrics().density*4);
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                TextView textView =null;
+                if (convertView==null){
+                    textView = new TextView(parent.getContext());
+                    textView.setPadding(padding,padding,padding,0);
+                    textView.setTextSize(12);
+                }else {
+                    textView = (TextView) convertView;
+                }
+                Model item = getItem(position);
+                textView.setText(item.toString());
+                textView.setTextColor(LOG_COLORS[item.priority]);
+                return textView;
+            }
+
+        };
         listView.setAdapter(adapter);
         secondView.findViewById(R.id.close).setOnClickListener(v->{
             params.width = LayoutParams.WRAP_CONTENT;
@@ -71,6 +110,17 @@ public class FloatView extends FrameLayout implements PrintProxy {
             windowManager.updateViewLayout(this, params);
             btnOk.setVisibility(VISIBLE);
             secondView.setVisibility(GONE);
+        });
+        secondView.findViewById(R.id.clear).setOnClickListener(v->{
+            adapter.clear();
+        });
+        secondView.findViewById(R.id.copy).setOnClickListener(v->{
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < adapter.getCount(); i++) {
+                Model item = adapter.getItem(i);
+                sb.append(item.toString).append('\n');
+            }
+            copy(sb.toString());
         });
         addView(secondView,0);
         secondView.setVisibility(GONE);
@@ -95,9 +145,10 @@ public class FloatView extends FrameLayout implements PrintProxy {
         }
         windowManager.getDefaultDisplay().getSize(screenSize);
 
-        params.width = width;
-        params.height = width;
-//        params.y = screenSize.y-width;
+        params.width = LayoutParams.WRAP_CONTENT;
+        params.height = LayoutParams.WRAP_CONTENT;
+        params.y = screenSize.y-width;
+        params.x = screenSize.x-width;
         params.gravity = Gravity.TOP | Gravity.LEFT;
         params.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
             | WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN;
@@ -106,14 +157,6 @@ public class FloatView extends FrameLayout implements PrintProxy {
         params.format = PixelFormat.TRANSLUCENT;
         params.windowAnimations = 0;
         windowManager.addView(this, params);
-    }
-
-
-    private void setViewAlpha(float alpha) {
-        getHandler().post(() -> {
-            params.alpha = alpha;
-            windowManager.updateViewLayout(this, params);
-        });
     }
 
 
@@ -149,11 +192,6 @@ public class FloatView extends FrameLayout implements PrintProxy {
     private VelocityTracker mVelocityTracker;   // 速度追踪器
     private boolean mIsSwipe;   // 是否滑动子View
 
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-
-    }
 
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
@@ -216,40 +254,71 @@ public class FloatView extends FrameLayout implements PrintProxy {
 
     @Override
     public void println(int priority, String msg) {
-        appendString(msg);
+        appendString(new Model(priority,msg));
     }
-    StringBuilder sb = new StringBuilder();
-    private void appendString(String msg) {
+    private void appendString(Model msg) {
         if (Thread.currentThread() != Looper.getMainLooper().getThread()) {
             post(() -> appendString(msg));
             return;
         }
-        Calendar instance = Calendar.getInstance();
-        sb.setLength(0);
-        sb.append('[');
-        process(sb, instance.get(Calendar.HOUR_OF_DAY), 2);
-        sb.append(':');
-        process(sb, instance.get(Calendar.MINUTE), 2);
-        sb.append(':');
-        process(sb, instance.get(Calendar.SECOND), 2);
-        sb.append(':');
-        process(sb, instance.get(Calendar.MILLISECOND), 3);
-        sb.append(']');
-        sb.append(' ');
-        sb.append(msg);
-        sb.append('\n');
-        adapter.add(sb.toString());
+       msg.process();
+        adapter.add(msg);
     }
-    private void process(StringBuilder sb, int t, int len) {
-        int tt = 1;
-        while (len > 1) {
-            tt *= 10;
-            len--;
+
+    final static class Model {
+        final int priority;
+        final String msg;
+        Thread thread;
+        public Model(int priority, String msg) {
+            this.priority = priority;
+            this.msg = msg;
+            this.thread = Thread.currentThread();
         }
-        while (t < tt) {
-            sb.append('0');
-            tt /= 10;
+        private String toString;
+        private static int fixLen = 30;
+        private void process() {
+            Calendar instance = Calendar.getInstance();
+            StringBuilder sb = new StringBuilder();
+            sb.append('[');
+            process(sb, instance.get(Calendar.HOUR_OF_DAY), 2);
+            sb.append(':');
+            process(sb, instance.get(Calendar.MINUTE), 2);
+            sb.append(':');
+            process(sb, instance.get(Calendar.SECOND), 2);
+            sb.append(':');
+            process(sb, instance.get(Calendar.MILLISECOND), 3);
+            sb.append(']');
+            sb.append(' ');
+            sb.append(thread.getId()).append("/").append(thread.getName());
+            if (sb.length()<fixLen){
+                for (int i = sb.length(); i < fixLen; i++) {
+                    sb.append(' ');
+                }
+            } else {
+                sb.delete(fixLen,sb.length());
+            }
+            sb.append(' ');
+            sb.append(logLevel[priority]).append(':');
+            sb.append(msg);
+            toString = sb.toString();
         }
-        sb.append(t);
+        static final char[] logLevel={' ',' ','V','D','I','W','E','A'};
+        private void process(StringBuilder sb, int t, int len) {
+            int tt = 1;
+            while (len > 1) {
+                tt *= 10;
+                len--;
+            }
+            while (t < tt) {
+                sb.append('0');
+                tt /= 10;
+            }
+            sb.append(t);
+        }
+
+        @Override
+        public String toString() {
+            return toString;
+        }
     }
 }

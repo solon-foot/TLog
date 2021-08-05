@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  android:background="#b0263238"
   xmlns:tools="http://schemas.android.com/tools"
   android:orientation="vertical">
 
@@ -15,10 +16,23 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="关闭" />
+    <Button
+      android:id="@+id/clear"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="清空" />
+    <Button
+      android:id="@+id/copy"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="复制" />
+
   </LinearLayout>
 
   <ListView
     android:id="@+id/list_view"
+    android:divider="@null"
+    android:dividerHeight="0dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
 </LinearLayout>
