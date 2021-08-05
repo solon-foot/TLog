@@ -1,3 +1,4 @@
+[![](https://jitpack.io/v/solon-foot/Tlog.svg)](https://jitpack.io/#solon-foot/Tlog)
 # TLog
 
 #### 介绍
@@ -12,7 +13,7 @@ Android 简单的日志格式打印
 
 #### 安装教程
 
-1. Add it in your root build.gradle at the end of repositories:
+1.  Add it in your root build.gradle at the end of repositories:
 ~~~
     allprojects {
         repositories {
@@ -22,11 +23,14 @@ Android 简单的日志格式打印
     }
 ~~~
 
-2.Add the dependency
+2. Add the dependency
 
 ~~~
     dependencies {
-        implementation 'com.github.solon-foot:TLog:Tag'
+        <!-- implementation 'com.github.solon-foot:TLog:Tag' -->
+        implementation 'com.github.solon-foot.Tlog:base-log:1.1.0'
+        debugImplementation 'com.github.solon-foot.Tlog:view-log:1.1.0'
+        debugImplementation'com.github.solon-foot.Tlog:http-log:1.1.0'
     }
 
 ~~~
