@@ -11,9 +11,9 @@ import org.java_websocket.server.WebSocketServer;
 
 class WsServer extends WebSocketServer implements PrintProxy {
 
-    public void println(int prolity,String msg){
+    public void println(int priority,String msg){
         for (WebSocket webSocket : set) {
-            webSocket.send(msg);
+            webSocket.send(priority+msg);
         }
     }
 

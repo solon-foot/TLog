@@ -26,17 +26,26 @@ Android 简单的日志格式打印
 2. Add the dependency
 
 ~~~
-    dependencies {
-        <!-- implementation 'com.github.solon-foot:TLog:Tag' -->
-        implementation 'com.github.solon-foot.Tlog:base-log:1.1.0'
-        debugImplementation 'com.github.solon-foot.Tlog:view-log:1.1.0'
-        debugImplementation'com.github.solon-foot.Tlog:http-log:1.1.0'
-    }
-
+implementation 'com.github.solon-foot.Tlog:base-log:1.1.0'
 ~~~
-
+使用网络日志
+```
+debugImplementation 'com.github.solon-foot.Tlog:view-log:1.1.0'
+```
+使用浮窗日志
+```
+debugImplementation'com.github.solon-foot.Tlog:http-log:1.1.0'
+```
 #### 使用说明
-
+```
+android {
+    
+        compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+```
 ~~~
 TLog.init("APP_NAME", Log.INFO);
 TLog.e(Object... args)

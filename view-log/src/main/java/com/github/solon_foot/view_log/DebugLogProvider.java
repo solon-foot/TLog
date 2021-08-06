@@ -12,52 +12,20 @@ import android.provider.Settings;
 import com.github.solon_foot.TLog;
 
 public class DebugLogProvider extends ContentProvider {
-    private final static String NOTIFY_ACTION = "com.github.solon_foot.view_log.notify";
     @Override
     public boolean onCreate() {
-//        final FloatUtilManager floatUtilManager = new FloatUtilManager(getContext());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(getContext())) {
-//      Toast.makeText(context, "SoGameDebug功能需要打开悬浮窗权限才能使用", Toast.LENGTH_LONG).show();
-            Intent intent = new Intent();
-            intent.setAction(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
-//            intent.setData(Uri.parse("package:" + context.getPackageName()));
-//            context.startActivity(intent);
+//            Intent intent = new Intent();
+//            intent.setAction(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
+            Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                Uri.parse("package:" + getContext().getPackageName()));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            getContext().startActivity(intent);
         }
-//        TLog.register(floatUtilManager);
-        TLog.register(new FloatView(getContext()));
-//        final Context context = getContext();
-//        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-//        int icon = context.getApplicationInfo().icon;
-//        Notification.Builder n = null;
-//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-//            String channelId = "channelId";
-//            NotificationChannel mChannel = new NotificationChannel(channelId, "name", NotificationManager.IMPORTANCE_LOW);
-//            mChannel.setImportance(NotificationManager.IMPORTANCE_HIGH);
-////            Toast.makeText(this, mChannel.toString(), Toast.LENGTH_SHORT).show();
-//            manager.createNotificationChannel(mChannel);
-//            n = new Notification.Builder(context,channelId);
-//        } else {
-//            n = new Notification.Builder(context);
-//            n.setPriority(Notification.PRIORITY_MAX);
-//        }
-//        Intent intent = new Intent(NOTIFY_ACTION);
-//        PendingIntent pi = PendingIntent.getBroadcast(context, 0, intent, 0);
-//        n.setContentTitle("Debug Logger")
-//            .setContentText("点击显示或隐藏log")
-//            .setSmallIcon(icon)
-//            .setContentIntent(pi)
-//            .setDefaults(Notification.DEFAULT_ALL)
-//            .setWhen(System.currentTimeMillis())
-//            .setAutoCancel(false);
-//        Notification notification = n.build();
-//        notification.flags |= Notification.FLAG_NO_CLEAR;
-//        manager.notify(22, notification);
-//        context.registerReceiver(new BroadcastReceiver() {
-//            @Override
-//            public void onReceive(Context context, Intent intent) {
-//                floatUtilManager.toggleLog();
-//            }
-//        },new IntentFilter(NOTIFY_ACTION));
+        try {
+            TLog.register(new FloatView(getContext()));
+        }catch (Exception e){}
+
         return true;
     }
 

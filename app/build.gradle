@@ -13,6 +13,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        resValue("integer", "LOG_PORT_NUMBER", "8888")
+        resValue("bool", "SHOW_DEVICE_IP", "true")
     }
 
     buildTypes {

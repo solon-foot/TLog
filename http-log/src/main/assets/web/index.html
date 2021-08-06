@@ -2,20 +2,82 @@
     <head>
         <title>在线log</title>
         <meta http-equiv="content-type" content="text/html;charset=utf-8">
+        <style type="text/css">
+        body{
+            background-color: #263238;
+            color:white;
+        }
+        
+        
+        .color_2{
+            color:#bbbbbb;
+        }
+        .color_3{
+            color:#0070bb;
+        }
+        .color_4{
+            color:#48bb31;
+        }
+        .color_5{
+            color:#bbbb23;
+        }
+        .color_6{
+            color:#ff5370;
+        }
+        .color_7{
+            color:#8f0005;
+        }
+       
+        </style>
     </head>
     <body>
+        <div>如需清空log,请刷新页面,不会记录历史log<span id="tip"></span>
+            <select id="priority" onchange="onSelectChange(this)">
+                <option value ="2">Verbose</option>
+                <option value ="3">Debug</option>
+                <option value="4">Info</option>
+                <option value="5">Warn</option>
+                <option value="6">Error</option>
+              </select>
+        </div>
         <ul id='ul'>
         </ul>
     </body>
     <script>
         let host = window.location.hostname;
-        let port = WEB_SOCKET_PORT;
+        // host = "10.10.9.9"
+        // let port = 53079;
         let ws = new WebSocket('ws://'+host+":"+port)
         let divObj = document.getElementById("ul");
+        let debugPriority=0;
+        if (typeof(Storage) !== "undefined") {
+            debugPriority = localStorage.getItem("debugPriority")||2
+            document.getElementById("priority").value = debugPriority;
+        }
         ws.onmessage = (e)=>{
             let li = document.createElement('li');
-            li.innerHTML = e.data;
+            let priority = e.data.substring(0,1)
+            if(priority<debugPriority)return;
+            let data = e.data.substring(1);
+            li.innerHTML = data;
+            li.classList="color_"+priority;
             divObj.appendChild(li);
+        }
+        ws.onerror=(e)=>{ 
+            let tip = document.getElementById("tip");
+            tip.innerText = "(未能连接到日志服务器)"
+            tip.style = "color:#ff5370"
+        }
+        ws.onopen = e=>{
+            let tip = document.getElementById("tip");
+            tip.innerText = "(日志服务器就绪)"
+            tip.style = "color:#48bb31"
+        }
+        function onSelectChange(e) {
+            console.log(e,e.value,debugPriority)
+            debugPriority = e.value;
+            localStorage.setItem("debugPriority",debugPriority)
+
         }
     </script>
 </html>
