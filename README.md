@@ -30,11 +30,14 @@ implementation 'com.github.solon-foot.Tlog:base-log:1.1.0'
 ~~~
 使用网络日志
 ```
-debugImplementation 'com.github.solon-foot.Tlog:view-log:1.1.0'
+debugImplementation 'com.github.solon-foot.Tlog:http-log:1.1.0'
+debugImplementation 'org.java-websocket:Java-WebSocket:1.3.9'
+debugImplementation 'org.nanohttpd:nanohttpd:2.3.1'
+//暂时不知道如何将依赖打包进去
 ```
 使用浮窗日志
 ```
-debugImplementation'com.github.solon-foot.Tlog:http-log:1.1.0'
+debugImplementation'com.github.solon-foot.Tlog:view-log:1.1.0'
 ```
 #### 使用说明
 ```
