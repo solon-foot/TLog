@@ -1,83 +1,146 @@
 <html>
-    <head>
-        <title>在线log</title>
-        <meta http-equiv="content-type" content="text/html;charset=utf-8">
-        <style type="text/css">
-        body{
+
+<head>
+    <title>在线log</title>
+    <meta http-equiv="content-type" content="text/html;charset=utf-8">
+    <style type="text/css">
+        body {
             background-color: #263238;
-            color:white;
+            color: white;
         }
-        
-        
-        .color_2{
-            color:#bbbbbb;
+
+
+        .color_2 {
+            color: #bbbbbb;
         }
-        .color_3{
-            color:#0070bb;
+
+        .color_3 {
+            color: #0070bb;
         }
-        .color_4{
-            color:#48bb31;
+
+        .color_4 {
+            color: #48bb31;
         }
-        .color_5{
-            color:#bbbb23;
+
+        .color_5 {
+            color: #bbbb23;
         }
-        .color_6{
-            color:#ff5370;
+
+        .color_6 {
+            color: #ff5370;
         }
-        .color_7{
-            color:#8f0005;
+
+        .color_7 {
+            color: #8f0005;
         }
-       
-        </style>
-    </head>
-    <body>
-        <div>如需清空log,请刷新页面,不会记录历史log<span id="tip"></span>
-            <select id="priority" onchange="onSelectChange(this)">
-                <option value ="2">Verbose</option>
-                <option value ="3">Debug</option>
-                <option value="4">Info</option>
-                <option value="5">Warn</option>
-                <option value="6">Error</option>
-              </select>
-        </div>
-        <ul id='ul'>
-        </ul>
-    </body>
-    <script>
-        let host = window.location.hostname;
-        // host = "10.10.9.9"
-        // let port = 53079;
-        let ws = new WebSocket('ws://'+host+":"+port)
-        let divObj = document.getElementById("ul");
-        let debugPriority=0;
-        if (typeof(Storage) !== "undefined") {
-            debugPriority = localStorage.getItem("debugPriority")||2
+    </style>
+</head>
+
+<body>
+    <div>如需清空log,请刷新页面,不会记录历史log<span id="tip"></span>
+        <select id="priority" onchange="onSelectChange(this)">
+            <option value="2">Verbose</option>
+            <option value="3">Debug</option>
+            <option value="4">Info</option>
+            <option value="5">Warn</option>
+            <option value="6">Error</option>
+        </select>
+        <input type="text" onchange="onTextChange(this.value)"/>
+        <input type="checkbox" onchange="onRegexChange(this)"/>Regex
+    </div>
+    <ul id='ul'>
+    </ul>
+</body>
+<script>
+    var hostname = window.location.hostname;
+    var host = window.location.host;
+    var ALL_DATA=[];
+    hostname = "10.10.9.9"
+    host = hostname+":8888";
+    // let port = 53079;
+
+    var fliterText = ""
+    var isRegex = false;
+    var divObj = document.getElementById("ul");
+        var debugPriority = 0;
+        if (typeof (Storage) !== "undefined") {
+            debugPriority = localStorage.getItem("debugPriority") || 2
             document.getElementById("priority").value = debugPriority;
         }
-        ws.onmessage = (e)=>{
-            let li = document.createElement('li');
-            let priority = e.data.substring(0,1)
-            if(priority<debugPriority)return;
-            let data = e.data.substring(1);
-            li.innerHTML = data;
-            li.classList="color_"+priority;
-            divObj.appendChild(li);
-        }
-        ws.onerror=(e)=>{ 
-            let tip = document.getElementById("tip");
-            tip.innerText = "(未能连接到日志服务器)"
-            tip.style = "color:#ff5370"
-        }
-        ws.onopen = e=>{
-            let tip = document.getElementById("tip");
-            tip.innerText = "(日志服务器就绪)"
-            tip.style = "color:#48bb31"
-        }
-        function onSelectChange(e) {
-            console.log(e,e.value,debugPriority)
-            debugPriority = e.value;
-            localStorage.setItem("debugPriority",debugPriority)
 
+    function checkConnect() {
+        tip("(Connecting...)","#bbbbbb")
+        fetch(`http://${host}/port`, {
+            // method: 'GET',
+            // redirect: 'follow',
+            // mode: "cors",
+            // mode: "no-cors",
+        }).then(response => response.text())
+            .then(result => connect(result))
+            .catch(error => setTimeout(()=>checkConnect(),1000));
+    }   
+    function fliter(msg){
+        if(!fliterText)return true;
+        if(isRegex) return msg.search(fliterText)>0;
+        return msg.indexOf(fliterText)>0;
+    }
+
+    
+    function appendMsg(data) {
+        if (data.priority < debugPriority) return;
+        if(!fliter(data.msg))return;
+        let li = document.createElement('li');
+            li.innerHTML = data.msg;
+            li.classList = "color_" + data.priority;
+            divObj.appendChild(li);
+    }
+    function connect(port) {
+        
+        console.log(port)
+        let ws = new WebSocket(`ws://${hostname}:${port}`)
+        
+        ws.onmessage = (e) => {
+            let priority = e.data.substring(0, 1)
+            let msg = e.data.substring(1); 
+            let data  = {priority,msg};
+            ALL_DATA.push(data);
+            appendMsg(data)
         }
-    </script>
+        ws.onerror = (e) => {
+            tip("(未能连接到日志服务器)","#ff5370")
+            console.log(e)
+        }
+        ws.onopen = e => {
+            tip("(日志服务器就绪)","#48bb31")
+        }
+        ws.onclose=e=>checkConnect();
+        // ws.onclose=e=>console.log(e);   
+    }
+    function tip(message,color) {
+        let tip = document.getElementById("tip");
+            tip.innerText = message;
+            tip.style = "color:"+color;
+    }
+    function refresh() {
+        divObj.innerHTML="";
+        ALL_DATA.forEach(msg=>appendMsg(msg));
+    }
+
+    function onSelectChange(e) {
+        console.log(e, e.value, debugPriority)
+        debugPriority = e.value;
+        localStorage.setItem("debugPriority", debugPriority)
+        refresh()
+    }
+    function onTextChange(e) {
+        fliterText = e;
+        refresh()
+    }
+    function onRegexChange(e){
+        isRegex = !isRegex;
+        refresh();
+    }
+    checkConnect();
+</script>
+
 </html>

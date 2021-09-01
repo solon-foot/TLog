@@ -33,6 +33,7 @@ public class DebugLogProvider extends ContentProvider {
     private Context context;
     @Override
     public boolean onCreate() {
+        TLog.e(1);
         TLog.register(WsServer.it());
         context = getContext();
         int id =getContext().getResources().getIdentifier("LOG_PORT_NUMBER","integer",getContext().getPackageName());

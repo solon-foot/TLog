@@ -20,6 +20,7 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ListView;

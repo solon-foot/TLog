@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="#b0263238"
+  android:background="#263238"
   xmlns:tools="http://schemas.android.com/tools"
   android:orientation="vertical">
 
@@ -11,11 +11,7 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal">
 
-    <Button
-      android:id="@+id/close"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:text="关闭" />
+
     <Button
       android:id="@+id/clear"
       android:layout_width="wrap_content"
@@ -26,7 +22,19 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:text="复制" />
-
+    <Spinner
+      android:id="@+id/spinner_priority"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:entries="@array/priority_items"/>
+    <Space
+      android:layout_width="0dp"
+      android:layout_height="1dp" android:layout_weight="1"/>
+    <Button
+      android:id="@+id/close"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="关闭" />
   </LinearLayout>
 
   <ListView

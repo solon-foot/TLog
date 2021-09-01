@@ -1,6 +1,7 @@
 package com.github.solon_foot.ws_log;
 
 import android.content.Context;
+import com.github.solon_foot.TLog;
 import fi.iki.elonen.NanoHTTPD;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -16,28 +17,16 @@ class HttpServer extends NanoHTTPD {
 
     @Override
     public Response serve(IHTTPSession session) {
-        InputStream is = null;
-        try {
-            String headScript = "<script>var port = " + WsServer.it().getPort() + ";</script>";
-            byte[] bytes = headScript.getBytes();
-            is = context.getAssets().open("web/index.html");
-            byte[] b;
-            b = new byte[is.available()+ bytes.length];
-            System.arraycopy(bytes,0,b,0,bytes.length);
-            is.read(b,bytes.length,is.available());
-            return newFixedLengthResponse(Response.Status.OK, MIME_HTML, new ByteArrayInputStream(b), b.length);
+        if ("/port".equals(session.getUri()))
+            return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, WsServer.it().getPort()+"");
+        try (InputStream is = context.getAssets().open("web/index.html")){
+            return newFixedLengthResponse(Response.Status.OK, MIME_HTML, is,is.available());
         } catch (IOException e) {
             return newFixedLengthResponse(Response.Status.NOT_FOUND, MIME_HTML, e.getMessage());
         } catch (Exception e) {
             return newFixedLengthResponse(Response.Status.INTERNAL_ERROR, MIME_HTML, e.getMessage());
         } finally {
-            if (is != null) {
-                try {
-                    is.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
+
         }
     }
 }
